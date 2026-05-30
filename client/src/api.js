@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: "/api" });
+// In dev this stays "/api" (Vite proxies to localhost:4000).
+// In production set VITE_API_URL to your deployed backend, e.g.
+//   https://your-doms-api.onrender.com/api
+export const API_BASE = import.meta.env.VITE_API_URL || "/api";
+
+const api = axios.create({ baseURL: API_BASE });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("doms_token");
@@ -22,7 +27,7 @@ api.interceptors.response.use(
 /** Opens a PDF endpoint in a new tab using the auth token (blob fetch). */
 export async function openPdf(path) {
   const token = localStorage.getItem("doms_token");
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
