@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  LOGISTICS
+  SAFETY
+  DISPATCH
+  GATE
+  ADMIN
+  DRIVER
+}
+
+enum TicketStatus {
+  PENDING_SAFETY
+  SAFETY_APPROVED
+  SAFETY_REJECTED
+  WAYBILL_GENERATED
+  OVERLOAD_PENDING
+  OVERLOAD_APPROVED
+  OVERLOAD_REJECTED
+  GATE_CLEARED
+}
+
+enum InspectionResult {
+  APPROVED
+  REJECTED
+}
+
+enum OverloadStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  pinHash      String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  ticketsCreated   Ticket[]            @relation("TicketCreatedBy")
+  inspections      SafetyInspection[]
+  waybills         Waybill[]
+  overloadReviews  OverloadReview[]
+  gateClearances   GateClearance[]
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+}
+
+model Truck {
+  id            Int      @id @default(autoincrement())
+  plateNumber   String   @unique
+  driverName    String
+  driverPhone   String?
+  transporter   String?
+  defaultProduct String?
+  capacityTons  Float
+  createdAt     DateTime @default(now())
+
+  tickets Ticket[]
+}
+
+model Ticket {
+  id              Int          @id @default(autoincrement())
+  ticketNumber    String       @unique
+  truckId         Int
+  truck           Truck        @relation(fields: [truckId], references: [id])
+  product         String
+  requestedQtyTons Float
+  destination     String
+  customer        String
+  notes           String?
+  status          TicketStatus @default(PENDING_SAFETY)
+  createdById     Int
+  createdBy       User         @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  inspection    SafetyInspection?
+  waybill       Waybill?
+  gateClearance GateClearance?
+  notifications Notification[]
+}
+
+model SafetyInspection {
+  id          Int              @id @default(autoincrement())
+  ticketId    Int              @unique
+  ticket      Ticket           @relation(fields: [ticketId], references: [id])
+  inspectorId Int
+  inspector   User             @relation(fields: [inspectorId], references: [id])
+  checklist   Json
+  result      InspectionResult
+  remarks     String?
+  inspectedAt DateTime         @default(now())
+}
+
+model Waybill {
+  id             Int            @id @default(autoincrement())
+  waybillNumber  String         @unique
+  ticketId       Int            @unique
+  ticket         Ticket         @relation(fields: [ticketId], references: [id])
+  dispatchedById Int
+  dispatchedBy   User           @relation(fields: [dispatchedById], references: [id])
+  loadedQtyTons  Float
+  overload       Boolean        @default(false)
+  overloadStatus OverloadStatus @default(NONE)
+  createdAt      DateTime       @default(now())
+
+  overloadReview OverloadReview?
+}
+
+model OverloadReview {
+  id           Int            @id @default(autoincrement())
+  waybillId    Int            @unique
+  waybill      Waybill        @relation(fields: [waybillId], references: [id])
+  reviewedById Int
+  reviewedBy   User           @relation(fields: [reviewedById], references: [id])
+  decision     ReviewDecision
+  reason       String?
+  reviewedAt   DateTime       @default(now())
+}
+
+model GateClearance {
+  id          Int      @id @default(autoincrement())
+  ticketId    Int      @unique
+  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+  clearedById Int
+  clearedBy   User     @relation(fields: [clearedById], references: [id])
+  notes       String?
+  exitedAt    DateTime @default(now())
+}
+
+model Notification {
+  id           Int      @id @default(autoincrement())
+  targetRole   Role?
+  targetUserId Int?
+  targetUser   User?    @relation(fields: [targetUserId], references: [id])
+  ticketId     Int?
+  ticket       Ticket?  @relation(fields: [ticketId], references: [id])
+  type         String
+  message      String
+  read         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+}

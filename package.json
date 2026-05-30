@@ -1,0 +1,18 @@
+{
+  "name": "doms",
+  "version": "1.0.0",
+  "description": "Depot Operations Management System (DOMS)",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "setup": "npm --prefix server run migrate && npm --prefix server run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
