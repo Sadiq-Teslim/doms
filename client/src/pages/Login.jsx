@@ -12,7 +12,7 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) navigate("/", { replace: true });
+    if (user) navigate("/dashboard", { replace: true });
   }, [user, navigate]);
 
   async function submit(e) {
@@ -21,7 +21,7 @@ export default function Login() {
     setBusy(true);
     try {
       await login(email, password);
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || "Login failed");
     } finally {

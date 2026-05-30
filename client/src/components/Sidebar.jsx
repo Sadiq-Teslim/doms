@@ -4,7 +4,7 @@ import { ROLE_NAV } from "../constants.js";
 import { NAV_ICONS } from "./Icons.jsx";
 
 const NAV_ITEMS = {
-  dashboard: { to: "/", label: "Dashboard" },
+  dashboard: { to: "/dashboard", label: "Dashboard" },
   tickets: { to: "/tickets", label: "Tickets" },
   create: { to: "/tickets/new", label: "New Ticket" },
   trucks: { to: "/trucks", label: "Trucks" },
