@@ -2,7 +2,7 @@
 
 A full-stack app that digitizes depot loading, safety compliance, dispatch, overload management, and gate clearance into one centralized workflow.
 
-**Stack:** React (Vite) + Tailwind · Express + Prisma · PostgreSQL (Docker) · server-side PDF (pdfkit) · JWT role-based auth.
+**Stack:** React (Vite) + Tailwind · Express + Prisma · PostgreSQL · server-side PDF (pdfkit) · JWT role-based auth.
 
 ## Workflow
 
@@ -15,29 +15,18 @@ Logistics (create ticket)
 Admin monitors everything via Audit Log + dashboard.
 ```
 
-## Prerequisites
-- Node.js 18+ and npm
-- Docker (for PostgreSQL)
-
-## Quick start
+## Local development
 
 ```bash
-# 1. Install all dependencies (root + server + client)
-npm run install:all
-
-# 2. Start PostgreSQL
-npm run db:up
-
-# 3. Create the schema + load demo data
-npm run setup
-
-# 4. Run server (:4000) and client (:5173) together
-npm run dev
+npm run install:all                 # install root + server + client deps
+# set server/.env (DATABASE_URL, JWT_SECRET) — see server/.env example
+npm run setup                       # apply schema + seed sample data
+npm run dev                         # server :4000 + client :5173
 ```
 
 Open http://localhost:5173
 
-## User accounts (sign-in password: `password123`)
+## Accounts (password: `password123`)
 
 | Role      | Email                    | Responsibility     |
 |-----------|--------------------------|--------------------|
@@ -48,12 +37,12 @@ Open http://localhost:5173
 | Gate      | gate@apexdepot.com       | Exit PIN: `1234`   |
 | Driver    | driver@apexdepot.com     | Views documents    |
 
-> Accounts and the gate PIN are created by `npm run setup`. Change them anytime from the Admin → Users screen.
+Created by `npm run setup`; change them from Admin → Users.
 
-## Project layout
-- `server/` — Express API + Prisma schema/seed (port 4000)
-- `client/` — Vite + React + Tailwind UI (port 5173)
-- `docker-compose.yml` — PostgreSQL 16
+## Layout
+- `client/` — Vite + React + Tailwind UI
+- `server/` — Express API + Prisma schema/seed
 
-## Out of scope (PRD future enhancements)
-QR/RFID, SMS/email, CCTV, offline mode, cryptographic digital signatures, analytics charts.
+## Environment variables
+- **server**: `DATABASE_URL`, `JWT_SECRET`, `PORT`, `CLIENT_ORIGIN`
+- **client**: `VITE_API_URL` (deployed backend URL incl. `/api`; unset locally)
