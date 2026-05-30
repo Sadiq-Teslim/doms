@@ -3,6 +3,7 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import Sidebar from "./Sidebar.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 import { IconLogout } from "./Icons.jsx";
+import Logo from "./Logo.jsx";
 
 const ROLE_LABELS = {
   LOGISTICS: "Logistics Officer",
@@ -25,7 +26,10 @@ export default function Layout() {
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="relative z-30 flex items-center justify-between border-b border-ink/[0.06] bg-cream-100/80 px-6 py-3 backdrop-blur">
-          <div className="font-display text-lg font-bold text-forest md:hidden">DOMS</div>
+          <div className="flex items-center gap-2 md:hidden">
+            <Logo size={30} rounded={9} />
+            <span className="font-display text-lg font-bold text-forest">DOMS</span>
+          </div>
           <div className="hidden text-sm font-medium text-ink-400 md:block">
             {ROLE_LABELS[user?.role] || user?.role} Console
           </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { IconArrowRight } from "../components/Icons.jsx";
+import Logo from "../components/Logo.jsx";
 
 export default function Login() {
   const { login, user } = useAuth();
@@ -45,9 +46,7 @@ export default function Login() {
         <div className="absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-gold/20 blur-3xl" />
 
         <div className="relative flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand font-display text-xl font-bold">
-            D
-          </div>
+          <Logo size={44} rounded={18} />
           <span className="font-display text-xl font-bold">DOMS</span>
         </div>
 
@@ -82,9 +81,7 @@ export default function Login() {
       <div className="flex w-full items-center justify-center bg-cream px-6 py-12 lg:w-1/2">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest font-display text-lg font-bold text-white">
-              D
-            </div>
+            <Logo size={40} />
             <span className="font-display text-lg font-bold text-forest">DOMS</span>
           </div>
 

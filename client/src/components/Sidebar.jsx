@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { ROLE_NAV } from "../constants.js";
 import { NAV_ICONS } from "./Icons.jsx";
+import Logo from "./Logo.jsx";
 
 const NAV_ITEMS = {
   dashboard: { to: "/dashboard", label: "Dashboard" },
@@ -23,9 +24,7 @@ export default function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 flex-col bg-forest p-5 text-white md:flex">
       <div className="mb-8 flex items-center gap-2.5 px-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand font-display text-lg font-bold text-white">
-          D
-        </div>
+        <Logo size={36} />
         <div>
           <div className="font-display text-lg font-bold leading-none">DOMS</div>
           <div className="text-[11px] text-white/50">Depot Operations</div>

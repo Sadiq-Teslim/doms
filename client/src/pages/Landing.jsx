@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
+import Logo from "../components/Logo.jsx";
 import {
   IconArrowRight,
   IconTicket,
@@ -33,9 +34,7 @@ export default function Landing() {
       {/* Nav */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest font-display text-lg font-bold text-white">
-            D
-          </div>
+          <Logo size={36} />
           <span className="font-display text-lg font-bold text-forest">DOMS</span>
         </div>
         <Link to={primaryTo} className="btn-primary">
