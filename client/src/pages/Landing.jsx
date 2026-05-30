@@ -47,11 +47,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-16 pt-6 lg:grid-cols-2 lg:pt-10">
         <div>
-          <span className="chip bg-brand-50 text-brand-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            Depot operations, digitized
-          </span>
-          <h1 className="mt-5 font-display text-5xl font-bold leading-[1.05] text-ink sm:text-6xl">
+          <h1 className="font-display text-5xl font-bold leading-[1.05] text-ink sm:text-6xl">
             From loading bay
             <br />
             to gate, <span className="text-brand">one flow.</span>
