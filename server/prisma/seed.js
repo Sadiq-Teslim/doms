@@ -16,6 +16,8 @@ let wseq = 0;
 const wbn = () => `WB-${dateStamp()}-${String(++wseq).padStart(4, "0")}`;
 
 async function reset() {
+  await prisma.marketer.deleteMany();
+  await prisma.staff.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.gateClearance.deleteMany();
@@ -170,8 +172,52 @@ async function main() {
   }
   await prisma.auditLog.createMany({ data: audit });
 
+  // Staff directory (broader than login accounts) for Staff Management.
+  const leadership = [
+    { name: "Olayinka Fagboore", department: "Admin", role: "Senior Depot Manager", terminal: "Terminal 2" },
+    { name: "Abdulmalik Gafar", department: "Admin", role: "Depot Manager", terminal: "Terminal 1" },
+    { name: "Doris Shitta", department: "Admin", role: "Deputy Depot Manager", terminal: "Terminal 1" },
+    { name: "Malomo Olusegun", department: "Safety", role: "Chief", terminal: "Terminal 2" },
+    { name: "Aiyedun Olawale", department: "Safety", role: "Team Member", terminal: "Terminal 1" },
+    { name: "Bello Samson", department: "Loading", role: "Chief", terminal: "Terminal 1" },
+  ];
+  const firstNames = ["Adaeze", "Chidi", "Ngozi", "Tunde", "Funke", "Sola", "Ibrahim", "Yusuf", "Aisha", "Emeka", "Ifeoma", "Bashir", "Halima", "Segun", "Bunmi", "Kelechi", "Uche", "Rita", "Dele", "Femi", "Gbenga", "Hauwa", "Nneka", "Obinna", "Tope", "Wale", "Zainab", "Bola", "Chinedu", "Damilola", "Grace", "Hassan", "Ireti", "Joseph", "Kemi", "Lanre", "Maryam", "Nasir", "Opeyemi", "Rasaq"];
+  const lastNames = ["Okafor", "Balogun", "Eze", "Adeyemi", "Mohammed", "Okoro", "Adebayo", "Ibrahim", "Nwankwo", "Ogundipe", "Bello", "Lawal", "Obi", "Olawale", "Danjuma", "Akinola", "Uche", "Musa", "Ojo", "Chukwu", "Yakubu", "Afolabi", "Onyeka", "Sani", "Ekwueme", "Aliyu", "Idris", "Ogunleye", "Madu", "Shittu"];
+  const departments = ["Safety", "Loading", "Logistics", "Dispatch", "Tank Farm", "Lab. & QA", "Maintenance", "Admin"];
+  const titles = ["Chief", "Team Member", "Team Member", "Supervisor", "Team Member", "Operator"];
+  const staff = [...leadership];
+  for (let i = 0; i < 50; i++) {
+    staff.push({
+      name: `${firstNames[i % firstNames.length]} ${lastNames[(i * 3) % lastNames.length]}`,
+      department: departments[i % departments.length],
+      role: titles[i % titles.length],
+      terminal: i % 2 === 0 ? "Terminal 1" : "Terminal 2",
+    });
+  }
+  await prisma.staff.createMany({ data: staff });
+
+  // Marketers' Records — 15 distinct marketers.
+  const marketerRecords = [
+    { name: "Feasible Path", representative: "Elizabeth Fadenipo", phone: "08104205202", email: "elizabethfadenipo@gmail.com" },
+    { name: "BOVAS", representative: "Adewale Ogunsanya", phone: "08031110022", email: "adewale.ogunsanya@bovas.com" },
+    { name: "Fatgbems", representative: "Bola Fadairo", phone: "08032220033", email: "bola.fadairo@fatgbems.com" },
+    { name: "Forte Oil", representative: "Chinedu Okeke", phone: "08033330044", email: "chinedu.okeke@forteoil.com" },
+    { name: "Conoil", representative: "Ngozi Umeh", phone: "08034440055", email: "ngozi.umeh@conoil.com" },
+    { name: "Ardova", representative: "Yusuf Bello", phone: "08035550066", email: "yusuf.bello@ardova.com" },
+    { name: "NIPCO", representative: "Halima Sani", phone: "08036660077", email: "halima.sani@nipco.com" },
+    { name: "Total Energies", representative: "Femi Adeyemi", phone: "08037770088", email: "femi.adeyemi@totalenergies.com" },
+    { name: "Mobil", representative: "Grace Okon", phone: "08038880099", email: "grace.okon@mobil.com" },
+    { name: "Oando", representative: "Ibrahim Lawal", phone: "08039990100", email: "ibrahim.lawal@oando.com" },
+    { name: "Rainoil", representative: "Tunde Bakare", phone: "08041110111", email: "tunde.bakare@rainoil.com" },
+    { name: "MRS", representative: "Kemi Adebola", phone: "08042220122", email: "kemi.adebola@mrs.com" },
+    { name: "Eterna", representative: "Samuel Eze", phone: "08043330133", email: "samuel.eze@eterna.com" },
+    { name: "AYM Shafa", representative: "Aisha Mohammed", phone: "08044440144", email: "aisha.mohammed@aymshafa.com" },
+    { name: "Matrix Energy", representative: "Daniel Obi", phone: "08045550155", email: "daniel.obi@matrixenergy.com" },
+  ];
+  await prisma.marketer.createMany({ data: marketerRecords });
+
   console.log("Done.");
-  console.log(`  Users: ${people.length}  ·  Trucks: ${trucks.length}  ·  Tickets: ${tickets.length}`);
+  console.log(`  Users: ${people.length}  ·  Trucks: ${trucks.length}  ·  Tickets: ${tickets.length}  ·  Staff: ${staff.length}`);
   console.log(`  Notifications: ${notifications.length}  ·  Audit entries: ${audit.length}`);
   console.log(`  Sign-in password: ${PASSWORD}  ·  Gate PIN: ${GATE_PIN}`);
 }

@@ -40,7 +40,7 @@ export const NAV_ITEMS = {
   dispatch: { to: "/dispatch", label: "Dispatch", icon: "dispatch" },
   overloads: { to: "/overloads", label: "Overloads", icon: "overloads" },
   gate: { to: "/gate", label: "Gate Clearance", icon: "gate" },
-  staff: { to: "/users", label: "Staff Management", icon: "staff" },
+  staff: { to: "/staff", label: "Staff Management", icon: "staff" },
   marketers: { to: "/marketers", label: "Marketers’ Records", icon: "marketers" },
   reports: { to: "/reports", label: "Reports", icon: "reports" },
   support: { to: "/support", label: "Support", icon: "support" },

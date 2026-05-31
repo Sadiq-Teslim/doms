@@ -64,6 +64,24 @@ model User {
   notifications    Notification[]
 }
 
+model Marketer {
+  id             Int      @id @default(autoincrement())
+  name           String
+  representative String
+  phone          String
+  email          String
+  createdAt      DateTime @default(now())
+}
+
+model Staff {
+  id         Int      @id @default(autoincrement())
+  name       String
+  department String   // Admin | Safety | Loading | Logistics | Dispatch | Tank Farm | Lab. & QA | Maintenance
+  role       String   // job title, e.g. Senior Depot Manager, Chief, Team Member
+  terminal   String   // Terminal 1 | Terminal 2
+  createdAt  DateTime @default(now())
+}
+
 model Truck {
   id            Int      @id @default(autoincrement())
   plateNumber   String   @unique

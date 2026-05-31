@@ -15,6 +15,8 @@ import OverloadReview from "./pages/OverloadReview.jsx";
 import GateClearance from "./pages/GateClearance.jsx";
 import Trucks from "./pages/Trucks.jsx";
 import Users from "./pages/Users.jsx";
+import StaffManagement from "./pages/StaffManagement.jsx";
+import MarketersRecords from "./pages/MarketersRecords.jsx";
 import AuditLog from "./pages/AuditLog.jsx";
 import AuditDetail from "./pages/AuditDetail.jsx";
 import Placeholder from "./pages/Placeholder.jsx";
@@ -84,6 +86,14 @@ export default function App() {
           }
         />
         <Route
+          path="/staff"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <StaffManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/users"
           element={
             <ProtectedRoute roles={["ADMIN"]}>
@@ -111,7 +121,7 @@ export default function App() {
           path="/marketers"
           element={
             <ProtectedRoute roles={["ADMIN"]}>
-              <Placeholder title="Marketers’ Records" icon="marketers" blurb="Profiles and loading history for each marketer will live here." />
+              <MarketersRecords />
             </ProtectedRoute>
           }
         />

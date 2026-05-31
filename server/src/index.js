@@ -5,6 +5,8 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
+import staffRoutes from "./routes/staff.js";
+import marketerRoutes from "./routes/marketers.js";
 import truckRoutes from "./routes/trucks.js";
 import ticketRoutes from "./routes/tickets.js";
 import overloadRoutes from "./routes/overloads.js";
@@ -23,6 +25,8 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, service: "DOMS API" }
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/staff", staffRoutes);
+app.use("/api/marketers", marketerRoutes);
 app.use("/api/trucks", truckRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/overloads", overloadRoutes);
