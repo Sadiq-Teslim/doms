@@ -17,6 +17,7 @@ import Trucks from "./pages/Trucks.jsx";
 import Users from "./pages/Users.jsx";
 import StaffManagement from "./pages/StaffManagement.jsx";
 import MarketersRecords from "./pages/MarketersRecords.jsx";
+import Reports from "./pages/Reports.jsx";
 import AuditLog from "./pages/AuditLog.jsx";
 import AuditDetail from "./pages/AuditDetail.jsx";
 import Placeholder from "./pages/Placeholder.jsx";
@@ -129,7 +130,7 @@ export default function App() {
           path="/reports"
           element={
             <ProtectedRoute roles={["ADMIN"]}>
-              <Placeholder title="Reports" icon="reports" blurb="Exportable operational reports and analytics are on the way." />
+              <Reports />
             </ProtectedRoute>
           }
         />
