@@ -16,6 +16,8 @@ import GateClearance from "./pages/GateClearance.jsx";
 import Trucks from "./pages/Trucks.jsx";
 import Users from "./pages/Users.jsx";
 import AuditLog from "./pages/AuditLog.jsx";
+import AuditDetail from "./pages/AuditDetail.jsx";
+import Placeholder from "./pages/Placeholder.jsx";
 
 export default function App() {
   return (
@@ -97,6 +99,32 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/audit/:id"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <AuditDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/marketers"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <Placeholder title="Marketers’ Records" icon="marketers" blurb="Profiles and loading history for each marketer will live here." />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <Placeholder title="Reports" icon="reports" blurb="Exportable operational reports and analytics are on the way." />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/support" element={<Placeholder title="Support" icon="support" blurb="Reach the DOMS support team — coming soon." />} />
+        <Route path="/settings" element={<Placeholder title="Settings" icon="settings" blurb="Account and system preferences will be configurable here." />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

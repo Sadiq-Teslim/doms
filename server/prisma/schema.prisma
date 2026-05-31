@@ -70,8 +70,9 @@ model Truck {
   driverName    String
   driverPhone   String?
   transporter   String?
+  truckType     String   @default("INTERNAL") // INTERNAL | MARKETER | INDUSTRIAL
   defaultProduct String?
-  capacityTons  Float
+  capacityTons  Float    // capacity in litres (legacy column name)
   createdAt     DateTime @default(now())
 
   tickets Ticket[]
@@ -83,9 +84,10 @@ model Ticket {
   truckId         Int
   truck           Truck        @relation(fields: [truckId], references: [id])
   product         String
-  requestedQtyTons Float
+  requestedQtyTons Float    // litres (legacy column name)
   destination     String
   customer        String
+  terminal        String       @default("Terminal 1")
   notes           String?
   status          TicketStatus @default(PENDING_SAFETY)
   createdById     Int

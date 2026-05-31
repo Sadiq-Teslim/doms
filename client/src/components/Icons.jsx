@@ -75,8 +75,37 @@ export const IconClock = (p) => (
   <Svg {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></Svg>
 );
 
+export const IconHome = (p) => (
+  <Svg {...p}><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" /><path d="M9.5 21v-6h5v6" /></Svg>
+);
+export const IconBuilding = (p) => (
+  <Svg {...p}><path d="M3 21h18" /><path d="M5 21V6a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v15" /><path d="M15 21V10h3a1 1 0 0 1 1 1v10" /><path d="M8 8h2M8 11h2M8 14h2" /></Svg>
+);
+export const IconFolder = (p) => (
+  <Svg {...p}><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></Svg>
+);
+export const IconHeadset = (p) => (
+  <Svg {...p}><path d="M4 13a8 8 0 0 1 16 0" /><path d="M4 13v3a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2Z" /><path d="M20 13v3a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2Z" /><path d="M17 18a4 4 0 0 1-4 3h-1" /></Svg>
+);
+export const IconSettings = (p) => (
+  <Svg {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7.7 1.6 1.6 0 0 0-1.1 1.5V22a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 8 20.3a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-.7-2.7 1.6 1.6 0 0 0-1.5-1.1H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 3.7 8a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H8a1.6 1.6 0 0 0 1-1.5V2a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V8a1.6 1.6 0 0 0 1.5 1H22a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" /></Svg>
+);
+export const IconCollapse = (p) => (
+  <Svg {...p}><path d="M9 4 4 9m0 0h4M4 9V5" /><path d="m15 20 5-5m0 0h-4m4 0v4" /></Svg>
+);
+export const IconUpload = (p) => (
+  <Svg {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 9l5-5 5 5" /><path d="M12 4v12" /></Svg>
+);
+export const IconChevronDown = (p) => (
+  <Svg {...p}><path d="m6 9 6 6 6-6" /></Svg>
+);
+export const IconBadgeCheck = (p) => (
+  <Svg {...p}><path d="M12 2.5 14.4 4l2.9-.2 1 2.7 2.5 1.5-.9 2.8.9 2.8-2.5 1.5-1 2.7-2.9-.2L12 21.5 9.6 20l-2.9.2-1-2.7L3.2 16l.9-2.8-.9-2.8L5.7 9l1-2.7L9.6 6 12 2.5Z" /><path d="m9 12 2 2 4-4" /></Svg>
+);
+
 export const NAV_ICONS = {
-  dashboard: IconGrid,
+  home: IconHome,
+  dashboard: IconHome,
   tickets: IconTicket,
   create: IconPlus,
   trucks: IconTruck,
@@ -84,6 +113,11 @@ export const NAV_ICONS = {
   dispatch: IconBox,
   overloads: IconAlert,
   gate: IconBarrier,
+  staff: IconUsers,
   users: IconUsers,
+  marketers: IconBuilding,
+  reports: IconFolder,
+  support: IconHeadset,
+  settings: IconSettings,
   audit: IconScroll,
 };

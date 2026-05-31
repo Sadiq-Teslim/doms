@@ -1,33 +1,108 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import api from "../api.js";
 import { useAuth } from "../auth/AuthContext.jsx";
-import { STATUS_LABELS, STATUS_STYLES } from "../constants.js";
-import { IconArrowRight, IconTicket, IconTruck, IconFile, IconAlert, IconCheck } from "../components/Icons.jsx";
+import StatCard from "../components/StatCard.jsx";
+import BarChart from "../components/BarChart.jsx";
+import { IconTicket, IconClock, IconBadgeCheck, IconTruck, IconUpload, IconChevronDown } from "../components/Icons.jsx";
 
-const QUICK_LINKS = {
-  LOGISTICS: [
-    { to: "/tickets/new", label: "Create Loading Ticket" },
-    { to: "/trucks", label: "Manage Trucks" },
-  ],
-  SAFETY: [{ to: "/safety", label: "Open Inspection Queue" }],
-  DISPATCH: [{ to: "/dispatch", label: "Open Dispatch Queue" }],
-  GATE: [{ to: "/gate", label: "Open Gate Clearance" }],
-  ADMIN: [
-    { to: "/overloads", label: "Review Overloads" },
-    { to: "/audit", label: "View Audit Log" },
-    { to: "/users", label: "Manage Users" },
-  ],
-  DRIVER: [{ to: "/tickets", label: "View My Documents" }],
-};
+function ordinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+function formatToday() {
+  const d = new Date();
+  const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
+  const month = d.toLocaleDateString("en-US", { month: "long" });
+  return `${weekday}, ${ordinal(d.getDate())} ${month}, ${d.getFullYear()}`;
+}
+function formatTime(iso) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+function shortName(name = "") {
+  const first = name.split(" ")[0].toUpperCase();
+  return first.length > 8 ? first.slice(0, 7) + "…" : first;
+}
 
-const CARD_META = [
-  { key: "totalTickets", label: "Total Tickets", Icon: IconTicket, tone: "text-forest", bg: "bg-forest/10" },
-  { key: "totalTrucks", label: "Trucks", Icon: IconTruck, tone: "text-brand-600", bg: "bg-brand-50" },
-  { key: "totalWaybills", label: "Waybills", Icon: IconFile, tone: "text-gold-600", bg: "bg-gold-100" },
-  { key: "pendingOverloads", label: "Pending Overloads", Icon: IconAlert, tone: "text-coral-600", bg: "bg-coral-100" },
-  { key: "clearedToday", label: "Cleared Today", Icon: IconCheck, tone: "text-brand-600", bg: "bg-brand-50" },
+const PERIODS = [
+  { label: "Daily", value: "daily" },
+  { label: "Weekly", value: "weekly" },
+  { label: "Monthly", value: "monthly" },
+  { label: "All time", value: "all" },
 ];
+
+// Compact filter dropdown (matches the BOVAS pill style).
+function Dropdown({ value, options, placeholder, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((o) => o.value === value);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 rounded-[12px] border-[0.5px] border-[#6B665E] px-4 py-1.5 text-[14px] text-[#2D2922] transition hover:bg-black/[0.03]"
+      >
+        {selected ? selected.label : placeholder}
+        <IconChevronDown size={14} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-[calc(100%+6px)] z-20 max-h-60 w-44 overflow-y-auto rounded-[12px] bg-white p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
+            {options.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => {
+                  onChange(o.value);
+                  setOpen(false);
+                }}
+                className={`block w-full truncate rounded-[8px] px-3 py-2 text-left text-[14px] transition hover:bg-[#FFF8E2] ${
+                  o.value === value ? "text-[#A57506]" : "text-[#2D2922]"
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ChartCard({ title, metric, color }) {
+  const [product, setProduct] = useState("");
+  const [period, setPeriod] = useState("daily");
+  const [resp, setResp] = useState({ products: [], perMarketer: [] });
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (product) params.set("product", product);
+    params.set("period", period);
+    api.get(`/stats/marketers?${params.toString()}`).then((r) => setResp(r.data)).catch(() => {});
+  }, [product, period]);
+
+  const productOptions = [{ label: "All Products", value: "" }, ...(resp.products || []).map((p) => ({ label: p, value: p }))];
+  const data = (resp.perMarketer || []).map((x) => ({
+    label: shortName(x.name),
+    value: metric === "quantity" ? Math.round(x.quantity) : x.trucks,
+  }));
+
+  return (
+    <div className="flex flex-1 flex-col gap-6 rounded-[8px] bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-[16px] font-semibold text-[#2D2922]">{title}</h3>
+        <div className="flex items-center gap-3">
+          <Dropdown value={product} options={productOptions} placeholder="Product" onChange={setProduct} />
+          <Dropdown value={period} options={PERIODS} placeholder="Daily" onChange={setPeriod} />
+        </div>
+      </div>
+      <BarChart data={data} color={color} />
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -37,95 +112,48 @@ export default function Dashboard() {
     api.get("/stats").then((res) => setStats(res.data)).catch(() => {});
   }, []);
 
-  const totals = stats?.totals || {};
+  const m = stats?.metrics || {};
   const firstName = user?.name?.split(" ")[0] || "there";
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const canUpload = ["ADMIN", "LOGISTICS"].includes(user?.role);
+
+  const cards = [
+    { Icon: IconTicket, label: "Generated Tickets", value: m.generatedTickets ?? "—", sub: `Last generated: ${formatTime(m.lastGeneratedAt)}` },
+    { Icon: IconClock, label: "Pending Tickets", value: m.pendingTickets ?? "—" },
+    { Icon: IconBadgeCheck, label: "Approved for Loading", value: m.approvedForLoading ?? "—" },
+    { Icon: IconTruck, label: "Trucks Dispatched", value: m.trucksDispatched ?? "—" },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-forest p-8 text-white">
-        <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand/25 blur-3xl" />
-        <div className="absolute -bottom-20 right-32 h-56 w-56 rounded-full bg-gold/15 blur-3xl" />
-        <div className="relative">
-          <p className="text-sm font-medium text-white/60">{greeting},</p>
-          <h1 className="mt-1 font-display text-3xl font-bold">{firstName} 👋</h1>
-          <p className="mt-2 max-w-xl text-sm text-white/70">
-            Here's a live snapshot of depot operations across every stage of the workflow.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-2.5">
-            {(QUICK_LINKS[user?.role] || []).map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-forest transition hover:bg-gold"
-              >
-                {l.label}
-                <IconArrowRight size={16} />
-              </Link>
-            ))}
-          </div>
+    <div className="mx-auto max-w-[1100px] space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-[24px] font-semibold text-[#2D2922]">Welcome, {firstName}!</h1>
+          <p className="mt-0.5 text-[14px] text-[#6B665E]">{formatToday()}</p>
         </div>
+        {canUpload && (
+          <button
+            type="button"
+            className="flex h-[56px] items-center justify-center gap-3 rounded-[16px] bg-[#FDB706] px-6 text-[14px] font-medium text-[#212121] transition hover:brightness-95 active:scale-[0.99]"
+          >
+            <IconUpload size={18} />
+            Upload Loading Program
+          </button>
+        )}
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {CARD_META.map(({ key, label, Icon, tone, bg }) => (
-          <div key={key} className="card">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg} ${tone}`}>
-              <Icon size={20} />
-            </div>
-            <div className="mt-4 font-display text-3xl font-bold text-ink">
-              {totals[key] ?? "—"}
-            </div>
-            <div className="mt-1 text-xs font-medium text-ink-400">{label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Breakdown */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="card lg:col-span-2">
-          <h2 className="mb-5 font-display text-lg font-bold">Tickets by Status</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {Object.entries(STATUS_LABELS).map(([key, label]) => (
-              <div
-                key={key}
-                className="flex items-center justify-between rounded-xl border border-ink/[0.06] bg-cream-100 px-4 py-3"
-              >
-                <span className={`chip ${STATUS_STYLES[key]}`}>{label}</span>
-                <span className="font-display text-lg font-bold text-ink">
-                  {stats ? stats.byStatus[key] || 0 : "—"}
-                </span>
-              </div>
-            ))}
-          </div>
+      <section className="space-y-5">
+        <h2 className="text-[20px] font-semibold text-[#4C4841]">Operations Overview</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map((c) => (
+            <StatCard key={c.label} {...c} />
+          ))}
         </div>
+      </section>
 
-        <div className="card">
-          <h2 className="mb-5 font-display text-lg font-bold">Workflow</h2>
-          <ol className="space-y-4">
-            {[
-              ["Logistics", "Creates loading ticket"],
-              ["Safety", "Inspects & approves"],
-              ["Dispatch", "Generates waybill"],
-              ["Admin", "Clears overloads"],
-              ["Gate", "Confirms exit"],
-            ].map(([title, desc], i) => (
-              <li key={title} className="flex gap-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest text-xs font-bold text-white">
-                  {i + 1}
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-ink">{title}</div>
-                  <div className="text-xs text-ink-400">{desc}</div>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
+      <section className="flex flex-col gap-3 lg:flex-row">
+        <ChartCard title="Trucks per Marketer" metric="trucks" color="#E6D4B6" />
+        <ChartCard title="Quantity Loaded per Marketer" metric="quantity" color="#E6D4B6" />
+      </section>
     </div>
   );
 }

@@ -30,12 +30,40 @@ export const DEFAULT_CHECKLIST = [
   "Earthing/bonding cable available",
 ];
 
-// Which sidebar links each role can see.
+// Sidebar navigation registry (key -> destination + label + icon key).
+export const NAV_ITEMS = {
+  home: { to: "/dashboard", label: "Home", icon: "home" },
+  tickets: { to: "/tickets", label: "Tickets", icon: "tickets" },
+  create: { to: "/tickets/new", label: "New Ticket", icon: "create" },
+  trucks: { to: "/trucks", label: "Trucks", icon: "trucks" },
+  safety: { to: "/safety", label: "Safety Queue", icon: "safety" },
+  dispatch: { to: "/dispatch", label: "Dispatch", icon: "dispatch" },
+  overloads: { to: "/overloads", label: "Overloads", icon: "overloads" },
+  gate: { to: "/gate", label: "Gate Clearance", icon: "gate" },
+  staff: { to: "/users", label: "Staff Management", icon: "staff" },
+  marketers: { to: "/marketers", label: "Marketers’ Records", icon: "marketers" },
+  reports: { to: "/reports", label: "Reports", icon: "reports" },
+  support: { to: "/support", label: "Support", icon: "support" },
+  settings: { to: "/settings", label: "Settings", icon: "settings" },
+  audit: { to: "/audit", label: "Audit Log", icon: "audit" },
+};
+
+// Which sidebar links each role sees, in order.
 export const ROLE_NAV = {
-  LOGISTICS: ["dashboard", "tickets", "create", "trucks"],
-  SAFETY: ["dashboard", "safety"],
-  DISPATCH: ["dashboard", "dispatch", "tickets"],
-  GATE: ["dashboard", "gate"],
-  ADMIN: ["dashboard", "tickets", "overloads", "trucks", "users", "audit"],
-  DRIVER: ["dashboard", "tickets"],
+  ADMIN: ["home", "audit", "staff", "marketers", "reports", "support", "settings"],
+  LOGISTICS: ["home", "tickets", "create", "trucks", "support", "settings"],
+  SAFETY: ["home", "safety", "support", "settings"],
+  DISPATCH: ["home", "dispatch", "tickets", "support", "settings"],
+  GATE: ["home", "gate", "support", "settings"],
+  DRIVER: ["home", "tickets", "support"],
+};
+
+// Friendly role names for the sidebar subtitle + topbar.
+export const ROLE_LABELS = {
+  LOGISTICS: "Logistics",
+  SAFETY: "Safety",
+  DISPATCH: "Dispatch",
+  GATE: "Gate",
+  ADMIN: "Admin",
+  DRIVER: "Driver",
 };

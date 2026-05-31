@@ -16,7 +16,6 @@ let wseq = 0;
 const wbn = () => `WB-${dateStamp()}-${String(++wseq).padStart(4, "0")}`;
 
 async function reset() {
-  // Clear in dependency order for a clean, professional starting state.
   await prisma.notification.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.gateClearance.deleteMany();
@@ -28,6 +27,20 @@ async function reset() {
   await prisma.user.deleteMany();
 }
 
+const goodChecklist = [
+  { item: "Fire extinguisher present & charged", ok: true },
+  { item: "No fuel/oil leaks observed", ok: true },
+  { item: "Tyres in good condition", ok: true },
+  { item: "Brake lights & indicators working", ok: true },
+  { item: "Driver has valid license & PPE", ok: true },
+];
+const badChecklist = [
+  { item: "Fire extinguisher present & charged", ok: true },
+  { item: "No fuel/oil leaks observed", ok: false, note: "Minor diesel seep at valve" },
+  { item: "Tyres in good condition", ok: true },
+  { item: "Driver has valid license & PPE", ok: false, note: "License expired" },
+];
+
 async function main() {
   console.log("Preparing depot data…");
   await reset();
@@ -36,112 +49,130 @@ async function main() {
   const pinHash = await bcrypt.hash(GATE_PIN, 10);
 
   const people = [
-    { name: "Adebayo Okonkwo", email: "logistics@apexdepot.com", role: "LOGISTICS" },
-    { name: "Chioma Eze", email: "safety@apexdepot.com", role: "SAFETY" },
-    { name: "Ibrahim Lawal", email: "dispatch@apexdepot.com", role: "DISPATCH" },
-    { name: "Emeka Nwosu", email: "gate@apexdepot.com", role: "GATE", pinHash },
-    { name: "Funmilayo Adeyemi", email: "admin@apexdepot.com", role: "ADMIN", pinHash },
-    { name: "Sani Abubakar", email: "driver@apexdepot.com", role: "DRIVER" },
+    { name: "Adebayo Okonkwo", email: "logistics@apexdepot.com", username: "adebayo", role: "LOGISTICS" },
+    { name: "Chioma Eze", email: "safety@apexdepot.com", username: "chioma", role: "SAFETY" },
+    { name: "Ibrahim Lawal", email: "dispatch@apexdepot.com", username: "ibrahim", role: "DISPATCH" },
+    { name: "Emeka Nwosu", email: "gate@apexdepot.com", username: "emeka", role: "GATE", pinHash },
+    { name: "Olayinka Fagboore", email: "admin@apexdepot.com", username: "olayinka", role: "ADMIN", pinHash },
+    { name: "Sani Abubakar", email: "driver@apexdepot.com", username: "sani", role: "DRIVER" },
   ];
-
   const U = {};
   for (const p of people) {
-    const u = await prisma.user.create({
-      data: { name: p.name, email: p.email, role: p.role, passwordHash, pinHash: p.pinHash ?? null },
+    U[p.role] = await prisma.user.create({
+      data: { name: p.name, email: p.email, username: p.username, role: p.role, passwordHash, pinHash: p.pinHash ?? null },
     });
-    U[p.role] = u;
   }
 
+  // capacityTons holds litres (legacy column name). truckType: INTERNAL | MARKETER | INDUSTRIAL.
   const trucksData = [
-    { plateNumber: "LSR-482-XA", driverName: "Musa Bello", driverPhone: "08031234501", transporter: "Swift Haulage Ltd", defaultProduct: "PMS (Petrol)", capacityTons: 33 },
-    { plateNumber: "AGL-913-KB", driverName: "Tunde Bakare", driverPhone: "08031234502", transporter: "Northern Lines", defaultProduct: "AGO (Diesel)", capacityTons: 45 },
-    { plateNumber: "KJA-205-CD", driverName: "Peter Obiora", driverPhone: "08031234503", transporter: "Delta Movers", defaultProduct: "DPK (Kerosene)", capacityTons: 30 },
-    { plateNumber: "FST-770-LG", driverName: "Yusuf Danjuma", driverPhone: "08031234504", transporter: "Apex Fleet", defaultProduct: "PMS (Petrol)", capacityTons: 40 },
+    { plateNumber: "BDJ-590-XA", driverName: "Musa Bello", driverPhone: "08031234501", transporter: "BOVAS Fleet", truckType: "INTERNAL", defaultProduct: "PMS (Petrol)", capacityTons: 45000 },
+    { plateNumber: "AGL-913-KB", driverName: "Tunde Bakare", driverPhone: "08031234502", transporter: "Northern Lines", truckType: "MARKETER", defaultProduct: "AGO (Diesel)", capacityTons: 33000 },
+    { plateNumber: "KJA-205-CD", driverName: "Peter Obiora", driverPhone: "08031234503", transporter: "Delta Movers", truckType: "INDUSTRIAL", defaultProduct: "DPK (Kerosene)", capacityTons: 60000 },
+    { plateNumber: "FST-770-LG", driverName: "Yusuf Danjuma", driverPhone: "08031234504", transporter: "BOVAS Fleet", truckType: "INTERNAL", defaultProduct: "PMS (Petrol)", capacityTons: 40000 },
+    { plateNumber: "EKY-118-AB", driverName: "Chuka Ifeanyi", driverPhone: "08031234505", transporter: "Swift Haulage Ltd", truckType: "MARKETER", defaultProduct: "AGO (Diesel)", capacityTons: 50000 },
+    { plateNumber: "OYO-634-MN", driverName: "Rasheed Aliyu", driverPhone: "08031234506", transporter: "Delta Movers", truckType: "INDUSTRIAL", defaultProduct: "PMS (Petrol)", capacityTons: 36000 },
+    { plateNumber: "ABJ-991-QR", driverName: "Gabriel Eze", driverPhone: "08031234507", transporter: "BOVAS Fleet", truckType: "INTERNAL", defaultProduct: "DPK (Kerosene)", capacityTons: 45000 },
+    { plateNumber: "PHC-307-ST", driverName: "Ngozi Udeh", driverPhone: "08031234508", transporter: "Apex Fleet", truckType: "MARKETER", defaultProduct: "AGO (Diesel)", capacityTons: 30000 },
   ];
-  const T = {};
-  for (const t of trucksData) T[t.plateNumber] = await prisma.truck.create({ data: t });
+  const trucks = [];
+  for (const t of trucksData) trucks.push(await prisma.truck.create({ data: t }));
 
-  const goodChecklist = [
-    { item: "Fire extinguisher present & charged", ok: true },
-    { item: "No fuel/oil leaks observed", ok: true },
-    { item: "Tyres in good condition", ok: true },
-    { item: "Brake lights & indicators working", ok: true },
-    { item: "Driver has valid license & PPE", ok: true },
+  // Marketers (== ticket.customer) with how many trucks each ran.
+  const marketers = [
+    ["BOVAS", 9], ["Fatgbems", 6], ["Forte", 7], ["Conoil", 5],
+    ["Ardova", 8], ["NIPCO", 3], ["Total", 4], ["Mobil", 2],
+  ];
+  const products = ["PMS (Petrol)", "AGO (Diesel)", "DPK (Kerosene)"];
+  const stations = [
+    "Babatunde Ishola Filling Station, Ilorin, Kwara State",
+    "Akobo 1 (30,000L) / Akobo 2 (15,000L)",
+    "BOVAS Mega Station, Challenge, Ibadan",
+    "Forte Filling Station, Garki, Abuja",
+    "Conoil Station, Benin City, Edo State",
+    "Local",
+    "Total Energies, Lekki, Lagos",
+    "NIPCO Station, Sabon Gari, Kano",
+  ];
+  const terminals = ["Terminal 1", "Terminal 2"];
+  // Weighted status mix (most loads complete; a few in earlier stages).
+  const statusPattern = [
+    "GATE_CLEARED", "GATE_CLEARED", "WAYBILL_GENERATED", "GATE_CLEARED", "SAFETY_APPROVED",
+    "GATE_CLEARED", "PENDING_SAFETY", "GATE_CLEARED", "OVERLOAD_PENDING", "WAYBILL_GENERATED",
+    "SAFETY_REJECTED", "GATE_CLEARED",
   ];
 
-  // 1) Fresh ticket awaiting safety
-  const t1 = await prisma.ticket.create({
-    data: { ticketNumber: tkt(), truckId: T["LSR-482-XA"].id, product: "PMS (Petrol)", requestedQtyTons: 30, destination: "Ibadan Terminal", customer: "Ardova Plc", createdById: U.LOGISTICS.id, status: "PENDING_SAFETY" },
-  });
+  async function makeTicket({ customer, product, qty, status, daysAgo, truck, idx }) {
+    const createdAt = new Date(Date.now() - daysAgo * 86400000 - (idx % 11) * 3600000);
+    const data = {
+      ticketNumber: tkt(), truckId: truck.id, product, requestedQtyTons: qty,
+      destination: stations[idx % stations.length], terminal: terminals[idx % terminals.length],
+      customer, createdById: U.LOGISTICS.id, status, createdAt,
+    };
+    const inspected = ["SAFETY_APPROVED", "WAYBILL_GENERATED", "OVERLOAD_PENDING", "GATE_CLEARED"].includes(status);
+    if (inspected) {
+      data.inspection = { create: { inspectorId: U.SAFETY.id, checklist: goodChecklist, result: "APPROVED", remarks: "All checks passed.", inspectedAt: createdAt } };
+    } else if (status === "SAFETY_REJECTED") {
+      data.inspection = { create: { inspectorId: U.SAFETY.id, checklist: badChecklist, result: "REJECTED", remarks: "Load held — defects found.", inspectedAt: createdAt } };
+    }
+    if (["WAYBILL_GENERATED", "OVERLOAD_PENDING", "GATE_CLEARED"].includes(status)) {
+      const overload = status === "OVERLOAD_PENDING";
+      const loaded = overload ? truck.capacityTons + 500 : Math.min(qty, truck.capacityTons);
+      data.waybill = { create: { waybillNumber: wbn(), dispatchedById: U.DISPATCH.id, loadedQtyTons: loaded, overload, overloadStatus: overload ? "PENDING" : "NONE", createdAt } };
+    }
+    if (status === "GATE_CLEARED") {
+      data.gateClearance = { create: { clearedById: U.GATE.id, notes: "Documents verified — exited.", exitedAt: daysAgo === 0 ? new Date() : createdAt } };
+    }
+    return prisma.ticket.create({ data });
+  }
 
-  // 2) Safety-approved, ready for dispatch
-  const t2 = await prisma.ticket.create({
-    data: {
-      ticketNumber: tkt(), truckId: T["AGL-913-KB"].id, product: "AGO (Diesel)", requestedQtyTons: 42, destination: "Abuja Depot", customer: "Mobil", createdById: U.LOGISTICS.id, status: "SAFETY_APPROVED",
-      inspection: { create: { inspectorId: U.SAFETY.id, checklist: goodChecklist, result: "APPROVED", remarks: "All checks passed." } },
-    },
-  });
+  let idx = 0;
+  const tickets = [];
+  for (const [customer, n] of marketers) {
+    for (let k = 0; k < n; k++) {
+      const status = statusPattern[idx % statusPattern.length];
+      const product = products[idx % products.length];
+      const truck = trucks[idx % trucks.length];
+      const qty = truck.capacityTons - [0, 0, 5000][idx % 3]; // full or slightly under (litres)
+      const daysAgo = idx % 30; // spread across the last month; some land today
+      tickets.push(await makeTicket({ customer, product, qty, status, daysAgo, truck, idx }));
+      idx++;
+    }
+  }
 
-  // 3) Waybill generated (within capacity), ready for gate
-  const t3 = await prisma.ticket.create({
-    data: {
-      ticketNumber: tkt(), truckId: T["KJA-205-CD"].id, product: "DPK (Kerosene)", requestedQtyTons: 28, destination: "Ilorin", customer: "Conoil", createdById: U.LOGISTICS.id, status: "WAYBILL_GENERATED",
-      inspection: { create: { inspectorId: U.SAFETY.id, checklist: goodChecklist, result: "APPROVED", remarks: "Cleared." } },
-      waybill: { create: { waybillNumber: wbn(), dispatchedById: U.DISPATCH.id, loadedQtyTons: 29, overload: false, overloadStatus: "NONE" } },
-    },
-  });
+  // Notifications (unread) so the bell + dropdown are populated per role.
+  const overloads = tickets.filter((t) => t.status === "OVERLOAD_PENDING");
+  const cleared = tickets.filter((t) => t.status === "GATE_CLEARED").slice(0, 3);
+  const pending = tickets.filter((t) => t.status === "PENDING_SAFETY").slice(0, 3);
+  const approved = tickets.filter((t) => t.status === "SAFETY_APPROVED").slice(0, 2);
+  const waybills = tickets.filter((t) => t.status === "WAYBILL_GENERATED").slice(0, 2);
 
-  // 4) Overload pending admin review
-  const t4 = await prisma.ticket.create({
-    data: {
-      ticketNumber: tkt(), truckId: T["KJA-205-CD"].id, product: "PMS (Petrol)", requestedQtyTons: 30, destination: "Lagos Island", customer: "NIPCO", createdById: U.LOGISTICS.id, status: "OVERLOAD_PENDING",
-      inspection: { create: { inspectorId: U.SAFETY.id, checklist: goodChecklist, result: "APPROVED", remarks: "Cleared." } },
-      waybill: { create: { waybillNumber: wbn(), dispatchedById: U.DISPATCH.id, loadedQtyTons: 34, overload: true, overloadStatus: "PENDING" } },
-    },
-  });
+  const notifications = [
+    ...overloads.map((t) => ({ targetRole: "ADMIN", ticketId: t.id, type: "OVERLOAD_PENDING", message: `Overload on ${t.ticketNumber} (${t.customer}) — needs admin approval.` })),
+    ...cleared.map((t) => ({ targetRole: "ADMIN", ticketId: t.id, type: "GATE_CLEARED", message: `Truck for ${t.ticketNumber} (${t.customer}) cleared the gate and exited.` })),
+    ...pending.map((t) => ({ targetRole: "SAFETY", ticketId: t.id, type: "TICKET_PENDING_SAFETY", message: `New ticket ${t.ticketNumber} (${t.customer}) awaiting safety inspection.` })),
+    ...approved.map((t) => ({ targetRole: "DISPATCH", ticketId: t.id, type: "TICKET_APPROVED", message: `Ticket ${t.ticketNumber} approved — ready for dispatch.` })),
+    ...waybills.map((t) => ({ targetRole: "GATE", ticketId: t.id, type: "READY_FOR_GATE", message: `Waybill issued for ${t.ticketNumber} — ready for gate clearance.` })),
+  ];
+  await prisma.notification.createMany({ data: notifications });
 
-  // 5) Completed — gate cleared / exited
-  const t5 = await prisma.ticket.create({
-    data: {
-      ticketNumber: tkt(), truckId: T["FST-770-LG"].id, product: "PMS (Petrol)", requestedQtyTons: 38, destination: "Benin City", customer: "Total Energies", createdById: U.LOGISTICS.id, status: "GATE_CLEARED",
-      inspection: { create: { inspectorId: U.SAFETY.id, checklist: goodChecklist, result: "APPROVED", remarks: "Cleared." } },
-      waybill: { create: { waybillNumber: wbn(), dispatchedById: U.DISPATCH.id, loadedQtyTons: 38, overload: false, overloadStatus: "NONE" } },
-      gateClearance: { create: { clearedById: U.GATE.id, notes: "Documents verified. Exited 14:22." } },
-    },
-  });
-
-  // 6) Rejected by safety
-  const t6 = await prisma.ticket.create({
-    data: {
-      ticketNumber: tkt(), truckId: T["LSR-482-XA"].id, product: "AGO (Diesel)", requestedQtyTons: 20, destination: "Jos", customer: "Oando", createdById: U.LOGISTICS.id, status: "SAFETY_REJECTED",
-      inspection: { create: { inspectorId: U.SAFETY.id, checklist: [...goodChecklist.slice(0, 3), { item: "Driver has valid license & PPE", ok: false, note: "License expired" }], result: "REJECTED", remarks: "Driver license expired — load held." } },
-    },
-  });
-
-  await prisma.notification.createMany({
-    data: [
-      { targetRole: "SAFETY", ticketId: t1.id, type: "TICKET_PENDING_SAFETY", message: `New loading ticket ${t1.ticketNumber} (${T["LSR-482-XA"].plateNumber}) awaiting safety inspection.` },
-      { targetRole: "DISPATCH", ticketId: t2.id, type: "TICKET_APPROVED", message: `Ticket ${t2.ticketNumber} approved by safety — ready for dispatch.` },
-      { targetRole: "GATE", ticketId: t3.id, type: "READY_FOR_GATE", message: `Waybill issued for ${t3.ticketNumber} (${T["KJA-205-CD"].plateNumber}) — ready for gate clearance.` },
-      { targetRole: "ADMIN", ticketId: t4.id, type: "OVERLOAD_PENDING", message: `Overload on ${t4.ticketNumber}: loaded 34t vs capacity 30t — needs admin approval.` },
-      { targetRole: "ADMIN", ticketId: t5.id, type: "GATE_CLEARED", message: `Truck ${T["FST-770-LG"].plateNumber} (${t5.ticketNumber}) cleared the gate and exited.` },
-    ],
-  });
-
-  await prisma.auditLog.createMany({
-    data: [
-      { actorId: U.LOGISTICS.id, action: "TICKET_CREATED", entity: "Ticket", entityId: String(t1.id) },
-      { actorId: U.LOGISTICS.id, action: "TICKET_CREATED", entity: "Ticket", entityId: String(t2.id) },
-      { actorId: U.SAFETY.id, action: "SAFETY_APPROVED", entity: "Ticket", entityId: String(t2.id) },
-      { actorId: U.DISPATCH.id, action: "WAYBILL_GENERATED", entity: "Ticket", entityId: String(t3.id) },
-      { actorId: U.DISPATCH.id, action: "WAYBILL_GENERATED", entity: "Ticket", entityId: String(t4.id), details: { overload: true } },
-      { actorId: U.GATE.id, action: "GATE_CLEARED", entity: "Ticket", entityId: String(t5.id) },
-      { actorId: U.SAFETY.id, action: "SAFETY_REJECTED", entity: "Ticket", entityId: String(t6.id) },
-    ],
-  });
+  // Audit history.
+  const audit = [];
+  for (const t of tickets) {
+    audit.push({ actorId: U.LOGISTICS.id, action: "TICKET_CREATED", entity: "Ticket", entityId: String(t.id), createdAt: t.createdAt });
+    if (["SAFETY_APPROVED", "WAYBILL_GENERATED", "OVERLOAD_PENDING", "GATE_CLEARED"].includes(t.status))
+      audit.push({ actorId: U.SAFETY.id, action: "SAFETY_APPROVED", entity: "Ticket", entityId: String(t.id), createdAt: t.createdAt });
+    if (["WAYBILL_GENERATED", "OVERLOAD_PENDING", "GATE_CLEARED"].includes(t.status))
+      audit.push({ actorId: U.DISPATCH.id, action: "WAYBILL_GENERATED", entity: "Ticket", entityId: String(t.id), createdAt: t.createdAt });
+    if (t.status === "GATE_CLEARED")
+      audit.push({ actorId: U.GATE.id, action: "GATE_CLEARED", entity: "Ticket", entityId: String(t.id), createdAt: t.createdAt });
+    if (t.status === "SAFETY_REJECTED")
+      audit.push({ actorId: U.SAFETY.id, action: "SAFETY_REJECTED", entity: "Ticket", entityId: String(t.id), createdAt: t.createdAt });
+  }
+  await prisma.auditLog.createMany({ data: audit });
 
   console.log("Done.");
-  console.log(`  Users : ${people.length}  ·  Trucks : ${trucksData.length}  ·  Tickets : 6`);
+  console.log(`  Users: ${people.length}  ·  Trucks: ${trucks.length}  ·  Tickets: ${tickets.length}`);
+  console.log(`  Notifications: ${notifications.length}  ·  Audit entries: ${audit.length}`);
   console.log(`  Sign-in password: ${PASSWORD}  ·  Gate PIN: ${GATE_PIN}`);
 }
 
