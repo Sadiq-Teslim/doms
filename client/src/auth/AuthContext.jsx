@@ -31,13 +31,20 @@ export function AuthProvider({ children }) {
     return res.data.user;
   }
 
+  async function register(payload) {
+    const res = await api.post("/auth/register", payload);
+    localStorage.setItem("doms_token", res.data.token);
+    setUser(res.data.user);
+    return res.data.user;
+  }
+
   function logout() {
     localStorage.removeItem("doms_token");
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

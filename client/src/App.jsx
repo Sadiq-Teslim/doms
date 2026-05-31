@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 import Landing from "./pages/Landing.jsx";
 import Login from "./pages/Login.jsx";
+import SignUp from "./pages/SignUp.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Tickets from "./pages/Tickets.jsx";
 import TicketCreate from "./pages/TicketCreate.jsx";
@@ -21,6 +22,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<SignUp />} />
       <Route
         element={
           <ProtectedRoute>
