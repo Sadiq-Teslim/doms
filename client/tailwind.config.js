@@ -47,8 +47,8 @@ export default {
         },
       },
       fontFamily: {
-        display: ['"Space Grotesk"', "system-ui", "sans-serif"],
-        sans: ['"Inter"', "system-ui", "sans-serif"],
+        display: ['"Poppins"', "system-ui", "sans-serif"],
+        sans: ['"Poppins"', "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 1px 2px rgba(18,33,27,0.04), 0 8px 24px -12px rgba(18,33,27,0.12)",
