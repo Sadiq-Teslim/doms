@@ -1,11 +1,11 @@
 {
-  "name": "DOMS — Depot Operations Management System",
-  "short_name": "DOMS",
+  "name": "BOVAS DOMS — Depot Operations Management System",
+  "short_name": "BOVAS DOMS",
   "description": "Digitize depot loading, safety, dispatch, overload control and gate clearance in one connected workflow.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F7F4EC",
-  "theme_color": "#0B4D34",
+  "background_color": "#FFF8E1",
+  "theme_color": "#FDB706",
   "icons": [
     { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
